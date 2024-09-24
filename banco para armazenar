@@ -1,0 +1,91 @@
+import sqlite3
+from tkinter import *
+
+# Conectar ao banco de dados SQLite
+conn = sqlite3.connect('academia_jiu_jitsu.db')
+c = conn.cursor()
+
+# Criar tabelas
+c.execute('''
+CREATE TABLE IF NOT EXISTS Alunos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    idade INTEGER,
+    genero TEXT,
+    turno TEXT NOT NULL
+)''')
+
+c.execute('''
+CREATE TABLE IF NOT EXISTS Frequencia (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    aluno_id INTEGER,
+    data_aula TEXT NOT NULL,
+    FOREIGN KEY (aluno_id) REFERENCES Alunos(id)
+)''')
+
+conn.commit()
+
+# Função para adicionar aluno
+def add_aluno():
+    nome = entry_nome.get()
+    idade = entry_idade.get()
+    genero = entry_genero.get()
+    turno = entry_turno.get()
+
+    c.execute('INSERT INTO Alunos (nome, idade, genero, turno) VALUES (?, ?, ?, ?)', 
+              (nome, idade, genero, turno))
+    conn.commit()
+    entry_nome.delete(0, END)
+    entry_idade.delete(0, END)
+    entry_genero.delete(0, END)
+    entry_turno.delete(0, END)
+
+# Função para registrar frequência
+def registrar_frequencia():
+    aluno_id = entry_aluno_id.get()
+    data_aula = entry_data.get()
+
+    c.execute('INSERT INTO Frequencia (aluno_id, data_aula) VALUES (?, ?)', 
+              (aluno_id, data_aula))
+    conn.commit()
+    entry_aluno_id.delete(0, END)
+    entry_data.delete(0, END)
+
+# Interface gráfica
+root = Tk()
+root.title("Registro de Alunos e Frequência")
+
+# Cadastro de Alunos
+Label(root, text="Nome:").grid(row=0)
+Label(root, text="Idade:").grid(row=1)
+Label(root, text="Gênero:").grid(row=2)
+Label(root, text="Turno:").grid(row=3)
+
+entry_nome = Entry(root)
+entry_idade = Entry(root)
+entry_genero = Entry(root)
+entry_turno = Entry(root)
+
+entry_nome.grid(row=0, column=1)
+entry_idade.grid(row=1, column=1)
+entry_genero.grid(row=2, column=1)
+entry_turno.grid(row=3, column=1)
+
+Button(root, text='Adicionar Aluno', command=add_aluno).grid(row=4, column=1)
+
+# Registro de Frequência
+Label(root, text="ID do Aluno:").grid(row=5)
+Label(root, text="Data da Aula:").grid(row=6)
+
+entry_aluno_id = Entry(root)
+entry_data = Entry(root)
+
+entry_aluno_id.grid(row=5, column=1)
+entry_data.grid(row=6, column=1)
+
+Button(root, text='Registrar Frequência', command=registrar_frequencia).grid(row=7, column=1)
+
+root.mainloop()
+
+# Fechar conexão
+conn.close()
